@@ -206,7 +206,14 @@ async function task_1_9(db) {
  *
  */
 async function task_1_10(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            ProductID,
+            ProductName
+        FROM Products
+        WHERE Discontinued = 1;  
+  `);
+  return result[0];
 }
 
 /**
@@ -219,7 +226,15 @@ async function task_1_10(db) {
  *
  */
 async function task_1_11(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+          ProductName,
+          UnitPrice
+        FROM Products
+        WHERE UnitPrice BETWEEN 5 AND 15
+        ORDER BY UnitPrice, ProductName;
+  `);
+  return result[0];
 }
 
 /**
@@ -232,7 +247,16 @@ async function task_1_11(db) {
  *
  */
 async function task_1_12(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT * FROM(
+          SELECT
+            ProductName,
+            UnitPrice
+        FROM Products
+        ORDER BY UnitPrice DESC LIMIT 20) as P
+        ORDER BY UnitPrice, ProductName
+  `);
+  return result[0];
 }
 
 /**
