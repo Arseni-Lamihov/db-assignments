@@ -405,8 +405,8 @@ async function task_1_19(db) {
         JOIN Orders as O ON O.CustomerID = C.CustomerID
         JOIN OrderDetails as OD ON OD.OrderID = O.OrderID
         GROUP BY CustomerID
-        HAVING SUM(UnitPrice * Quantity) > 10000
-        ORDER BY SUM(UnitPrice * Quantity) DESC, CustomerID
+        HAVING \`TotalOrdersAmount, $\` > 10000
+        ORDER BY \`TotalOrdersAmount, $\` DESC, CustomerID
   `);
   return result[0];
 }
@@ -420,7 +420,19 @@ async function task_1_19(db) {
  *
  */
 async function task_1_20(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            E.EmployeeID as "EmployeeID",
+            CONCAT(E.FirstName, " ", E.LastName) as "Employee Full Name",
+            SUM(OD.UnitPrice * OD.Quantity) as "Amount, $"
+        FROM Employees as E
+        JOIN Orders as O ON O.EmployeeID = E.EmployeeID
+        JOIN OrderDetails as OD ON OD.OrderID = O.OrderID
+        GROUP BY E.EmployeeID
+        ORDER BY \`Amount, $\` DESC
+        LIMIT 1;
+  `);
+  return result[0];
 }
 
 /**
@@ -430,7 +442,16 @@ async function task_1_20(db) {
  * @return {array}
  */
 async function task_1_21(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            OrderID,
+            SUM(UnitPrice * Quantity)  as "Maximum Purchase Amount, $"
+        FROM OrderDetails
+        GROUP BY OrderID
+        ORDER BY \`Maximum Purchase Amount, $\` DESC
+        LIMIT 1    
+  `);
+  return result[0];
 }
 
 /**
@@ -441,7 +462,10 @@ async function task_1_21(db) {
  * @return {array}
  */
 async function task_1_22(db) {
-  throw new Error("Not implemented");
+  let result = await.db.query(`
+  
+  `);
+  return result[0];
 }
 
 module.exports = {
