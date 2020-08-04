@@ -267,7 +267,15 @@ async function task_1_12(db) {
  *
  */
 async function task_1_13(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            COUNT(ProductID) as "TotalOfCurrentProducts",
+            COUNT(CASE
+                    WHEN Discontinued = 1 
+                      THEN 1 END ) as "TotalOfDiscontinuedProducts"           
+        FROM Products;
+  `);
+  return result[0];
 }
 
 /**
@@ -278,7 +286,16 @@ async function task_1_13(db) {
  *
  */
 async function task_1_14(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            ProductName,
+            UnitsOnOrder,
+            UnitsInStock
+        FROM Products
+        WHERE UnitsInStock < UnitsOnOrder
+  
+  `);
+  return result[0];
 }
 
 /**
@@ -289,7 +306,24 @@ async function task_1_14(db) {
  *
  */
 async function task_1_15(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            SUM(MONTH(OrderDate) = 1) as January,
+            SUM(MONTH(OrderDate) = 2) as February,
+            SUM(MONTH(OrderDate) = 3) as March,
+            SUM(MONTH(OrderDate) = 4) as April,
+            SUM(MONTH(OrderDate) = 5) as May,
+            SUM(MONTH(OrderDate) = 6) as June,
+            SUM(MONTH(OrderDate) = 7) as July,
+            SUM(MONTH(OrderDate) = 8) as August,
+            SUM(MONTH(OrderDate) = 9) as September,
+            SUM(MONTH(OrderDate) = 10) as October,
+            SUM(MONTH(OrderDate) = 11) as November,
+            SUM(MONTH(OrderDate) = 12) as December
+        FROM Orders
+        WHERE YEAR(OrderDate) = 1997;
+  `);
+  return result[0];
 }
 
 /**
@@ -300,7 +334,15 @@ async function task_1_15(db) {
  *
  */
 async function task_1_16(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+          SELECT
+              OrderID,
+              CustomerID,
+              ShipCountry
+          FROM Orders
+          WHERE ShipPostalCode IS NOT NULL;  
+  `);
+  return result[0];
 }
 
 /**
@@ -313,7 +355,16 @@ async function task_1_16(db) {
  *
  */
 async function task_1_17(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+          SELECT
+              C.CategoryName,
+              AVG(P.UnitPrice) AS "AvgPrice"
+          FROM Categories as C
+          JOIN Products as P ON C.CategoryID = P.CategoryID 
+          GROUP BY C.CategoryID          
+          ORDER BY AvgPrice DESC, CategoryName;
+  `);
+  return result[0];
 }
 
 /**
@@ -325,7 +376,15 @@ async function task_1_17(db) {
  *
  */
 async function task_1_18(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+          SELECT
+              DATE_FORMAT(OrderDate, '%Y-%m-%d %T') as "OrderDate" ,
+              COUNT(OrderID) as "Total Number of Orders"
+          FROM Orders
+          WHERE YEAR(OrderDate) = 1998
+          GROUP BY OrderDate;
+  `);
+  return result[0];  
 }
 
 /**
@@ -337,7 +396,19 @@ async function task_1_18(db) {
  *
  */
 async function task_1_19(db) {
-  throw new Error("Not implemented");
+  let result = await db.query(`
+        SELECT
+            C.CustomerID,
+            C.CompanyName,
+            SUM(UnitPrice * Quantity) AS 'TotalOrdersAmount, $'
+        FROM Customers as C
+        JOIN Orders as O ON O.CustomerID = C.CustomerID
+        JOIN OrderDetails as OD ON OD.OrderID = O.OrderID
+        GROUP BY CustomerID
+        HAVING SUM(UnitPrice * Quantity) > 10000
+        ORDER BY SUM(UnitPrice * Quantity) DESC, CustomerID
+  `);
+  return result[0];
 }
 
 /**
