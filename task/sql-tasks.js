@@ -462,7 +462,7 @@ async function task_1_21(db) {
  * @return {array}
  */
 async function task_1_22(db) {
-  let result = await.db.query(`
+  let result = await db.query(`
   
   `);
   return result[0];
