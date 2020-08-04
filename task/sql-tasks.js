@@ -174,7 +174,8 @@ async function task_1_8(db) {
             COUNT(P.CategoryID) as "TotalNumberOfProducts"
         FROM Categories as C
         JOIN Products as P ON P.CategoryID = C.CategoryID
-        GROUP BY C.CategoryID;  
+        GROUP BY C.CategoryID
+        ORDER BY C.CategoryID;
   `);
   return result[0];
 }
@@ -462,10 +463,12 @@ async function task_1_21(db) {
  * @return {array}
  */
 async function task_1_22(db) {
-  let result = await db.query(`
-  
-  `);
-  return result[0];
+  // let result = await db.query(`
+  //       SELECT
+            
+  // `);
+  // return result[0];
+  throw new Error("Not implemented");
 }
 
 module.exports = {
