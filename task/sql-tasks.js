@@ -88,7 +88,7 @@ async function task_1_4(db) {
         ROUND(COUNT(*)/(SELECT COUNT(*) FROM Orders)*100, 5) as "% of all orders"
     FROM Orders 
     GROUP BY CustomerID 
-    ORDER BY COUNT(*)/(SELECT COUNT(*) FROM Orders)*100 DESC, CustomerID;      
+    ORDER BY \`% of all orders\` DESC, CustomerID;      
   `);
   return result[0]; 
 }
@@ -125,12 +125,12 @@ async function task_1_5(db) {
 async function task_1_6(db) {
   let result = await db.query(`
     SELECT 
-        P.ProductName,
-        C.CategoryName,
-        S.CompanyName as "SupplierCompanyName"
-    FROM Products as P
-    JOIN Suppliers as S ON S.SupplierID=P.SupplierID
-    JOIN Categories as C ON C.CategoryID = P.CategoryID
+        ProductName,
+        Categories.CategoryName,
+        Suppliers.CompanyName as "SupplierCompanyName"
+    FROM Products 
+    JOIN Suppliers  ON Suppliers.SupplierID = Products.SupplierID
+    JOIN Categories  ON Categories.CategoryID = Products.CategoryID
     ORDER BY ProductName, SupplierCompanyName;
   `);
   return result[0];
@@ -170,12 +170,12 @@ async function task_1_7(db) {
 async function task_1_8(db) {
   let result = await db.query(`
         SELECT
-            C.CategoryName as "CategoryName",
-            COUNT(P.CategoryID) as "TotalNumberOfProducts"
-        FROM Categories as C
-        JOIN Products as P ON P.CategoryID = C.CategoryID
-        GROUP BY C.CategoryID
-        ORDER BY C.CategoryID;
+            Categories.CategoryName,
+            COUNT(Products.CategoryID) as "TotalNumberOfProducts"
+        FROM Categories
+        INNER JOIN Products ON Products.CategoryID = Categories.CategoryID
+        GROUP BY Categories.CategoryID
+        ORDER BY Categories.CategoryID;
   `);
   return result[0];
 }
@@ -270,10 +270,8 @@ async function task_1_12(db) {
 async function task_1_13(db) {
   let result = await db.query(`
         SELECT
-            COUNT(ProductID) as "TotalOfCurrentProducts",
-            COUNT(CASE
-                    WHEN Discontinued = 1 
-                      THEN 1 END ) as "TotalOfDiscontinuedProducts"           
+            (COUNT(ProductID)) as 'TotalOfCurrentProducts',
+            (COUNT(CASE WHEN Discontinued = 1 THEN 1 END )) as 'TotalOfDiscontinuedProducts'         
         FROM Products;
   `);
   return result[0];
@@ -309,18 +307,18 @@ async function task_1_14(db) {
 async function task_1_15(db) {
   let result = await db.query(`
         SELECT
-            SUM(MONTH(OrderDate) = 1) as January,
-            SUM(MONTH(OrderDate) = 2) as February,
-            SUM(MONTH(OrderDate) = 3) as March,
-            SUM(MONTH(OrderDate) = 4) as April,
-            SUM(MONTH(OrderDate) = 5) as May,
-            SUM(MONTH(OrderDate) = 6) as June,
-            SUM(MONTH(OrderDate) = 7) as July,
-            SUM(MONTH(OrderDate) = 8) as August,
-            SUM(MONTH(OrderDate) = 9) as September,
-            SUM(MONTH(OrderDate) = 10) as October,
-            SUM(MONTH(OrderDate) = 11) as November,
-            SUM(MONTH(OrderDate) = 12) as December
+            (COUNT(IF(MONTH(OrderDate) = 1, 1, NULL))) as January,
+            (COUNT(IF(MONTH(OrderDate) = 2, 1, NULL))) as February,
+            (COUNT(IF(MONTH(OrderDate) = 3, 1, NULL))) as March,
+            (COUNT(IF(MONTH(OrderDate) = 4, 1, NULL))) as April,
+            (COUNT(IF(MONTH(OrderDate) = 5, 1, NULL))) as May,
+            (COUNT(IF(MONTH(OrderDate) = 6, 1, NULL))) as June,
+            (COUNT(IF(MONTH(OrderDate) = 7, 1, NULL))) as July,
+            (COUNT(IF(MONTH(OrderDate) = 8, 1, NULL))) as August,
+            (COUNT(IF(MONTH(OrderDate) = 9, 1, NULL))) as September,
+            (COUNT(IF(MONTH(OrderDate) = 10, 1, NULL))) as October,
+            (COUNT(IF(MONTH(OrderDate) = 11, 1, NULL))) as November,
+            (COUNT(IF(MONTH(OrderDate) = 12, 1, NULL))) as December
         FROM Orders
         WHERE YEAR(OrderDate) = 1997;
   `);
@@ -358,11 +356,11 @@ async function task_1_16(db) {
 async function task_1_17(db) {
   let result = await db.query(`
           SELECT
-              C.CategoryName,
-              AVG(P.UnitPrice) AS "AvgPrice"
-          FROM Categories as C
-          JOIN Products as P ON C.CategoryID = P.CategoryID 
-          GROUP BY C.CategoryID          
+              CategoryName,
+              AVG(Products.UnitPrice) AS "AvgPrice"
+          FROM Categories 
+          INNER JOIN Products ON Categories.CategoryID = Products.CategoryID 
+          GROUP BY Categories.CategoryID          
           ORDER BY AvgPrice DESC, CategoryName;
   `);
   return result[0];
@@ -399,12 +397,12 @@ async function task_1_18(db) {
 async function task_1_19(db) {
   let result = await db.query(`
         SELECT
-            C.CustomerID,
-            C.CompanyName,
+            Customers.CustomerID,
+            Customers.CompanyName,
             SUM(UnitPrice * Quantity) AS 'TotalOrdersAmount, $'
-        FROM Customers as C
-        JOIN Orders as O ON O.CustomerID = C.CustomerID
-        JOIN OrderDetails as OD ON OD.OrderID = O.OrderID
+        FROM Customers 
+        INNER JOIN Orders ON Orders.CustomerID = Customers.CustomerID
+        INNER JOIN OrderDetails ON OrderDetails.OrderID = Orders.OrderID
         GROUP BY CustomerID
         HAVING \`TotalOrdersAmount, $\` > 10000
         ORDER BY \`TotalOrdersAmount, $\` DESC, CustomerID
@@ -423,13 +421,13 @@ async function task_1_19(db) {
 async function task_1_20(db) {
   let result = await db.query(`
         SELECT
-            E.EmployeeID as "EmployeeID",
-            CONCAT(E.FirstName, " ", E.LastName) as "Employee Full Name",
-            SUM(OD.UnitPrice * OD.Quantity) as "Amount, $"
-        FROM Employees as E
-        JOIN Orders as O ON O.EmployeeID = E.EmployeeID
-        JOIN OrderDetails as OD ON OD.OrderID = O.OrderID
-        GROUP BY E.EmployeeID
+            Employees.EmployeeID as "EmployeeID",
+            CONCAT(Employees.FirstName, " ", Employees.LastName) as "Employee Full Name",
+            SUM(OrderDetails.UnitPrice * OrderDetails.Quantity) as "Amount, $"
+        FROM Employees
+        INNER JOIN Orders ON Orders.EmployeeID = Employees.EmployeeID
+        INNER JOIN OrderDetails ON OrderDetails.OrderID = Orders.OrderID
+        GROUP BY Employees.EmployeeID
         ORDER BY \`Amount, $\` DESC
         LIMIT 1;
   `);
@@ -472,30 +470,17 @@ async function task_1_22(db) {
         JOIN Orders as O ON O.CustomerID = C.CustomerID        
         JOIN OrderDetails as OD ON OD.OrderID = O.OrderID
         JOIN Products as P ON OD.ProductID = P.ProductID
-        WHERE OD.UnitPrice = (SELECT
-                                MAX(ODNew.UnitPrice)
-                              FROM Customers as CNew
-                              JOIN Orders as ONew ON ONew.CustomerID = CNew.CustomerID 
-                              JOIN OrderDetails as ODNew ON ONew.OrderID = ODNew.OrderID 
-                              WHERE CNew.CompanyName = C.CompanyName)
-        ORDER BY PricePerItem DESC, CompanyName, ProductName
-
-                             
-
-
-            
+        JOIN (SELECT
+          CNew.CustomerID,
+          MAX(ODNew.UnitPrice) as 'MaxPrice'
+          FROM Customers as CNew
+          JOIN Orders as ONew ON ONew.CustomerID = CNew.CustomerID 
+          JOIN OrderDetails as ODNew ON ONew.OrderID = ODNew.OrderID 
+          GROUP BY CNew.CustomerID) as S
+          ON S.CustomerID = C.CustomerID AND S.MaxPrice = OD.UnitPrice
+          ORDER BY OD.UnitPrice DESC, C.CompanyName, P.ProductName;
   `);
   return result[0];
-
-  
-  // FROM Customers c1
-  // JOIN Orders o2 ON o2.CustomerID = c1.CustomerID 
-  // JOIN OrderDetails od2 ON o2.OrderID = od2.OrderID )
-
-  // FROM OrderDetails as ODNew
-  //                             JOIN Orders as ONew ON ODNew.OrderID = ONew.OrderID
-  //                             JOIN Customers as CNew ON ONew.CustomerID = CNew.CustomerID
-  // throw new Error("Not implemented");
 }
 
 module.exports = {
