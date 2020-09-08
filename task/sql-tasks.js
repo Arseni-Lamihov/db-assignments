@@ -269,10 +269,11 @@ async function task_1_12(db) {
  */
 async function task_1_13(db) {
   let result = await db.query(`
-        SELECT
-            (SELECT COUNT(ProductID)) as 'TotalOfCurrentProducts',
-            (SELECT COUNT(CASE WHEN Discontinued = 1 THEN 1 END )) as 'TotalOfDiscontinuedProducts'         
-        FROM Products;
+      SELECT
+        (SELECT COUNT(ProductID) FROM Products) as 'TotalOfCurrentProducts',
+        (SELECT COUNT(*) FROM Products WHERE Discontinued = 1) as 'TotalOfDiscontinuedProducts'
+    FROM Products
+    LIMIT 1
   `);
   return result[0];
 }
